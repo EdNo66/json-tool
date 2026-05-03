@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JSON Validator Online — Validate & Check JSON Syntax | JSONGeek</title>
+  <meta name="description" content="Free online JSON validator. Instantly check if your JSON is valid, get plain-English error hints with line and column numbers, and view key stats." />
+  <link rel="canonical" href="https://jsongeek.com/tools/json-validator" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #222535;
+      --border: #2e3148;
+      --accent: #6c63ff;
+      --accent-hover: #7c74ff;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --text: #e2e8f0;
+      --text-muted: #8892a4;
+      --text-dim: #4a5568;
+      --font-mono: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      --radius: 8px;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+
+    header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; gap: 16px; }
+    .logo { font-size: 1.2rem; font-weight: 700; color: var(--accent); text-decoration: none; letter-spacing: -0.5px; }
+    .logo span { color: var(--text); }
+    nav { display: flex; gap: 8px; margin-left: auto; }
+    nav a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; padding: 4px 10px; border-radius: 6px; transition: color 0.15s, background 0.15s; }
+    nav a:hover { color: var(--text); background: var(--surface2); }
+    nav a.active { color: var(--accent); background: rgba(108,99,255,0.12); }
+
+    main { flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; padding: 28px 20px; }
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
+    .page-header p { color: var(--text-muted); font-size: 0.95rem; }
+
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; padding: 12px 16px; }
+
+    select, button { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-size: 0.85rem; cursor: pointer; transition: border-color 0.15s, background 0.15s; font-family: inherit; }
+    select:focus, button:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    select:hover, button:hover { border-color: var(--accent); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; padding: 6px 18px; }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+    .btn-ghost { background: transparent; border-color: var(--border); color: var(--text-muted); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--text-muted); background: var(--surface2); }
+
+    .editor-area { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-top: none; overflow: hidden; min-height: 420px; }
+
+    .pane { display: flex; flex-direction: column; position: relative; }
+    .pane + .pane { border-left: 1px solid var(--border); }
+    .pane-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 0.78rem; color: var(--text-muted); }
+    .pane-header .pane-title { font-weight: 600; color: var(--text); }
+
+    textarea { flex: 1; background: var(--surface); color: var(--text); border: none; padding: 16px; font-family: var(--font-mono); font-size: 0.88rem; line-height: 1.6; resize: none; outline: none; tab-size: 2; }
+
+    /* Validation Result Pane */
+    .result-pane { flex: 1; padding: 16px; overflow-y: auto; background: var(--surface); }
+
+    .valid-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+    }
+    .valid-banner .icon { font-size: 1.6rem; }
+    .valid-banner h3 { font-size: 1rem; color: var(--green); margin-bottom: 2px; }
+    .valid-banner p { font-size: 0.83rem; color: var(--text-muted); }
+
+    .invalid-banner {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 16px 20px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+    }
+    .invalid-banner .err-header { display: flex; align-items: center; gap: 10px; }
+    .invalid-banner .icon { font-size: 1.4rem; }
+    .invalid-banner h3 { font-size: 1rem; color: var(--red); }
+    .invalid-banner .err-detail { font-size: 0.84rem; color: #fca5a5; font-family: var(--font-mono); background: rgba(239,68,68,0.08); padding: 10px 14px; border-radius: 6px; white-space: pre-wrap; line-height: 1.5; }
+    .invalid-banner .err-hint { font-size: 0.83rem; color: var(--text-muted); padding: 8px 12px; background: var(--surface2); border-radius: 6px; border-left: 3px solid var(--yellow); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      text-align: center;
+    }
+    .stat-card .stat-val { font-size: 1.4rem; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+    .stat-card .stat-lbl { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .context-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .context-box h4 { font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .context-line { font-family: var(--font-mono); font-size: 0.84rem; line-height: 1.5; }
+    .context-line .err-line { color: var(--red); background: rgba(239,68,68,0.12); display: block; padding: 2px 6px; border-radius: 3px; }
+    .context-line .ctx-line { color: var(--text-muted); display: block; padding: 2px 6px; }
+    .context-line .pointer { color: var(--yellow); display: block; padding: 0 6px; }
+
+    .root-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .root-type-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+    .placeholder-msg { color: var(--text-dim); font-size: 0.9rem; text-align: center; padding: 40px 20px; line-height: 1.6; }
+
+    .status-bar { display: flex; align-items: center; gap: 14px; padding: 8px 16px; background: var(--surface); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius); font-size: 0.78rem; color: var(--text-muted); }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+    .status-dot.ok { background: var(--green); }
+    .status-dot.err { background: var(--red); }
+
+    .info-section { margin-top: 40px; }
+    .info-section h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; }
+    .info-section p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 12px; }
+
+    @media (max-width: 700px) {
+      .editor-area { grid-template-columns: 1fr; }
+      .pane + .pane { border-left: none; border-top: 1px solid var(--border); }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="https://jsongeek.com">JSON<span>Geek</span></a>
+  <nav>
+    <a href="/tools/json-formatter">Formatter</a>
+    <a href="/tools/json-validator" class="active">Validator</a>
+    <a href="/tools/json-minifier">Minifier</a>
+    <a href="/tools/json-to-csv">→ CSV</a>
+    <a href="/tools/json-to-python">→ Python</a>
+  </nav>
+</header>
+
+<main>
+  <div class="page-header">
+    <h1>JSON Validator</h1>
+    <p>Check if your JSON is valid. Get plain-English error messages with exact line and column numbers, plus full structure stats.</p>
+  </div>
+
+  <div class="toolbar">
+    <div style="margin-left: auto; display: flex; gap: 8px;">
+      <button class="btn-ghost" onclick="clearAll()">Clear</button>
+      <button class="btn-ghost" onclick="loadSample('valid')">Valid Sample</button>
+      <button class="btn-ghost" onclick="loadSample('invalid')">Invalid Sample</button>
+      <button class="btn-primary" onclick="runValidate()">Validate ↵</button>
+    </div>
+  </div>
+
+  <div class="editor-area">
+    <div class="pane">
+      <div class="pane-header">
+        <span class="pane-title">Input JSON</span>
+        <span id="inputCount">0 chars</span>
+      </div>
+      <textarea id="inputArea" placeholder='Paste JSON here to validate…' spellcheck="false"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <span class="pane-title">Validation Result</span>
+        <span id="resultLabel" style="color: var(--text-muted);">—</span>
+      </div>
+      <div class="result-pane" id="resultPane">
+        <div class="placeholder-msg">
+          Paste JSON on the left and click <strong>Validate</strong><br/>
+          — or press <strong>Ctrl+Enter</strong> to run instantly.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Ready</span>
+  </div>
+
+  <div class="info-section">
+    <h2>What makes JSON invalid?</h2>
+    <p>Common JSON errors include: trailing commas after the last element, single quotes instead of double quotes around keys or strings, missing quotes on keys, unescaped special characters in strings, mismatched brackets or braces, and values like <code>undefined</code> or <code>NaN</code> which are not valid JSON types.</p>
+    <p>This validator gives you the exact line and column number of the error plus a plain-English explanation — so you can fix it in seconds.</p>
+  </div>
+</main>
+
+<script>
+  const inputArea = document.getElementById('inputArea');
+  const resultPane = document.getElementById('resultPane');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const inputCount = document.getElementById('inputCount');
+  const resultLabel = document.getElementById('resultLabel');
+
+  function runValidate() {
+    const raw = inputArea.value.trim();
+    if (!raw) { reset(); return; }
+
+    try {
+      const parsed = JSON.parse(raw);
+      showValid(parsed, raw);
+    } catch (e) {
+      showInvalid(e, raw);
+    }
+  }
+
+  function showValid(parsed, raw) {
+    const keys = countKeys(parsed);
+    const depth = getDepth(parsed);
+    const items = countItems(parsed);
+    const bytes = new Blob([raw]).size;
+    const rootType = getRootType(parsed);
+
+    statusDot.className = 'status-dot ok';
+    statusText.textContent = 'Valid JSON';
+    resultLabel.textContent = '✓ Valid';
+    resultLabel.style.color = 'var(--green)';
+
+    resultPane.innerHTML = `
+      <div class="valid-banner">
+        <div class="icon">✅</div>
+        <div>
+          <h3>Valid JSON</h3>
+          <p>Your JSON is syntactically correct and ready to use.</p>
+        </div>
+      </div>
+      <div class="root-type-badge"><div class="dot"></div>Root type: <strong>${rootType}</strong></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val">${keys}</div><div class="stat-lbl">Total Keys</div></div>
+        <div class="stat-card"><div class="stat-val">${depth}</div><div class="stat-lbl">Max Depth</div></div>
+        <div class="stat-card"><div class="stat-val">${items}</div><div class="stat-lbl">Array Items</div></div>
+        <div class="stat-card"><div class="stat-val">${formatBytes(bytes)}</div><div class="stat-lbl">Size</div></div>
+        <div class="stat-card"><div class="stat-val">${raw.split('\n').length}</div><div class="stat-lbl">Lines</div></div>
+        <div class="stat-card"><div class="stat-val">${countNulls(parsed)}</div><div class="stat-lbl">Null Values</div></div>
+      </div>
+    `;
+  }
+
+  function showInvalid(e, raw) {
+    const { line, col, hint, detail } = parseError(e.message, raw);
+
+    statusDot.className = 'status-dot err';
+    statusText.textContent = 'Invalid JSON';
+    resultLabel.textContent = '✗ Invalid';
+    resultLabel.style.color = 'var(--red)';
+
+    const contextHTML = buildContext(raw, line, col);
+
+    resultPane.innerHTML = `
+      <div class="invalid-banner">
+        <div class="err-header">
+          <div class="icon">❌</div>
+          <h3>Invalid JSON — Syntax Error</h3>
+        </div>
+        <div class="err-detail">${escHtml(detail)}</div>
+        <div class="err-hint">💡 ${escHtml(hint)}</div>
+      </div>
+      ${line > 0 ? `
+      <div class="context-box">
+        <h4>Error Context — Line ${line}, Column ${col}</h4>
+        <div class="context-line">${contextHTML}</div>
+      </div>` : ''}
+    `;
+  }
+
+  function parseError(msg, raw) {
+    let line = 0, col = 0;
+    const posMatch = msg.match(/position (\d+)/i);
+    let detail = msg;
+
+    if (posMatch) {
+      const pos = parseInt(posMatch[1]);
+      const before = raw.substring(0, pos);
+      line = (before.match(/\n/g) || []).length + 1;
+      col = pos - before.lastIndexOf('\n');
+      detail = `SyntaxError at line ${line}, column ${col}\n${msg}`;
+    }
+
+    const hint = getHint(msg, raw, posMatch ? parseInt(posMatch[1]) : -1);
+    return { line, col, hint, detail };
+  }
+
+  function getHint(msg, raw, pos) {
+    if (msg.includes('Unexpected token')) {
+      const ch = pos >= 0 ? raw[pos] : '';
+      if (ch === "'") return "Use double quotes (\") instead of single quotes (') for strings and keys.";
+      if (ch === ',') return "There's a trailing comma after the last item. JSON doesn't allow trailing commas.";
+      if (ch === undefined || ch === '') return "The JSON appears to be cut off or empty. Make sure the full value is pasted.";
+      return `Unexpected character "${escHtml(ch)}". Check for typos, unquoted keys, or missing colons.`;
+    }
+    if (msg.includes('Unexpected end')) return "Your JSON is incomplete — likely a missing closing bracket '}' or ']'.";
+    if (msg.includes('Expected property name')) return "Object keys must be in double quotes. Example: {\"key\": \"value\"}";
+    if (msg.toLowerCase().includes('circular')) return "Circular references are not supported in JSON.";
+    return "Check for mismatched brackets, missing commas, or unquoted strings.";
+  }
+
+  function buildContext(raw, errorLine, errorCol) {
+    if (!errorLine) return '';
+    const lines = raw.split('\n');
+    const start = Math.max(0, errorLine - 3);
+    const end = Math.min(lines.length, errorLine + 1);
+    let html = '';
+    for (let i = start; i < end; i++) {
+      const ln = i + 1;
+      const lineText = escHtml(lines[i] || '');
+      if (ln === errorLine) {
+        html += `<span class="err-line">${ln.toString().padStart(4)}  ${lineText}</span>`;
+        const pointer = ' '.repeat(errorCol + 5) + '^';
+        html += `<span class="pointer">${escHtml(pointer)}</span>`;
+      } else {
+        html += `<span class="ctx-line">${ln.toString().padStart(4)}  ${lineText}</span>`;
+      }
+    }
+    return html;
+  }
+
+  function getRootType(v) {
+    if (v === null) return 'null';
+    if (Array.isArray(v)) return `Array (${v.length} items)`;
+    if (typeof v === 'object') return `Object (${Object.keys(v).length} keys)`;
+    return typeof v;
+  }
+
+  function countKeys(obj) {
+    if (typeof obj !== 'object' || obj === null) return 0;
+    if (Array.isArray(obj)) return obj.reduce((s, v) => s + countKeys(v), 0);
+    return Object.keys(obj).length + Object.values(obj).reduce((s, v) => s + countKeys(v), 0);
+  }
+
+  function countItems(obj) {
+    if (!obj || typeof obj !== 'object') return 0;
+    if (Array.isArray(obj)) return obj.length + obj.reduce((s, v) => s + countItems(v), 0);
+    return Object.values(obj).reduce((s, v) => s + countItems(v), 0);
+  }
+
+  function countNulls(obj) {
+    if (obj === null) return 1;
+    if (typeof obj !== 'object') return 0;
+    const vals = Array.isArray(obj) ? obj : Object.values(obj);
+    return vals.reduce((s, v) => s + countNulls(v), 0);
+  }
+
+  function getDepth(obj, d = 0) {
+    if (typeof obj !== 'object' || obj === null) return d;
+    const children = Array.isArray(obj) ? obj : Object.values(obj);
+    if (children.length === 0) return d + 1;
+    return Math.max(...children.map(v => getDepth(v, d + 1)));
+  }
+
+  function formatBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    return (b/1048576).toFixed(2) + ' MB';
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function reset() {
+    resultPane.innerHTML = '<div class="placeholder-msg">Paste JSON on the left and click <strong>Validate</strong><br/>— or press <strong>Ctrl+Enter</strong> to run instantly.</div>';
+    statusDot.className = 'status-dot';
+    statusText.textContent = 'Ready';
+    resultLabel.textContent = '—';
+    resultLabel.style.color = 'var(--text-muted)';
+  }
+
+  function clearAll() {
+    inputArea.value = '';
+    inputCount.textContent = '0 chars';
+    reset();
+  }
+
+  function loadSample(type) {
+    if (type === 'valid') {
+      inputArea.value = `{
+  "user": {
+    "id": 1042,
+    "name": "Ada Lovelace",
+    "email": "ada@example.com",
+    "active": true,
+    "roles": ["admin", "editor"],
+    "address": null
+  }
+}`;
+    } else {
+      inputArea.value = `{
+  'name': 'Ada Lovelace',
+  "email": "ada@example.com",
+  "active": true,
+  "roles": ["admin", "editor",],
+}`;
+    }
+    inputCount.textContent = inputArea.value.length + ' chars';
+    runValidate();
+  }
+
+  inputArea.addEventListener('input', () => {
+    inputCount.textContent = inputArea.value.length + ' chars';
+  });
+
+  inputArea.addEventListener('paste', () => {
+    setTimeout(() => {
+      inputCount.textContent = inputArea.value.length + ' chars';
+      runValidate();
+    }, 10);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') runValidate();
+  });
+</script>
+
+</body>
+</html>

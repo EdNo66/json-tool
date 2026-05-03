@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JSON Formatter Online — Format & Beautify JSON | JSONGeek</title>
+  <meta name="description" content="Free online JSON formatter and beautifier. Paste your JSON and instantly format it with customizable indentation. Auto-formats on paste." />
+  <link rel="canonical" href="https://jsongeek.com/tools/json-formatter" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #222535;
+      --border: #2e3148;
+      --accent: #6c63ff;
+      --accent-hover: #7c74ff;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --text: #e2e8f0;
+      --text-muted: #8892a4;
+      --text-dim: #4a5568;
+      --font-mono: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      --radius: 8px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+
+    .logo span { color: var(--text); }
+
+    nav { display: flex; gap: 8px; margin-left: auto; }
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+    nav a:hover { color: var(--text); background: var(--surface2); }
+    nav a.active { color: var(--accent); background: rgba(108,99,255,0.12); }
+
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 28px 20px;
+    }
+
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
+    .page-header p { color: var(--text-muted); font-size: 0.95rem; }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 12px 16px;
+    }
+
+    .toolbar-group { display: flex; align-items: center; gap: 8px; }
+    .toolbar-label { font-size: 0.8rem; color: var(--text-muted); }
+
+    select, button {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      font-family: inherit;
+    }
+    select:focus, button:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    select:hover, button:hover { border-color: var(--accent); }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      padding: 6px 18px;
+    }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text-muted);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--text-muted); background: var(--surface2); }
+
+    .btn-toggle {
+      display: flex;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      padding: 0;
+    }
+    .btn-toggle button {
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+    }
+    .btn-toggle button.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-toggle button:hover:not(.active) { background: var(--border); }
+
+    .editor-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      overflow: hidden;
+      min-height: 480px;
+    }
+
+    .pane {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .pane + .pane { border-left: 1px solid var(--border); }
+
+    .pane-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .pane-header .pane-title { font-weight: 600; color: var(--text); }
+
+    textarea, .output-code {
+      flex: 1;
+      background: var(--surface);
+      color: var(--text);
+      border: none;
+      padding: 16px;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+      tab-size: 2;
+      white-space: pre;
+      overflow: auto;
+    }
+
+    .output-code {
+      display: block;
+      width: 100%;
+      min-height: 200px;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 8px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      flex-shrink: 0;
+    }
+    .status-dot.ok { background: var(--green); }
+    .status-dot.err { background: var(--red); }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+    }
+
+    .error-banner {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(239,68,68,0.1);
+      border-top: 1px solid rgba(239,68,68,0.3);
+      font-size: 0.84rem;
+      color: #fca5a5;
+    }
+    .error-banner.show { display: flex; }
+
+    .copy-btn {
+      position: absolute;
+      top: 36px;
+      right: 10px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      z-index: 10;
+    }
+
+    .info-section {
+      margin-top: 40px;
+    }
+    .info-section h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+    .info-section p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 12px; }
+
+    @media (max-width: 700px) {
+      .editor-area { grid-template-columns: 1fr; }
+      .pane + .pane { border-left: none; border-top: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="https://jsongeek.com">JSON<span>Geek</span></a>
+  <nav>
+    <a href="/tools/json-formatter" class="active">Formatter</a>
+    <a href="/tools/json-validator">Validator</a>
+    <a href="/tools/json-minifier">Minifier</a>
+    <a href="/tools/json-to-csv">→ CSV</a>
+    <a href="/tools/json-to-python">→ Python</a>
+  </nav>
+</header>
+
+<main>
+  <div class="page-header">
+    <h1>JSON Formatter</h1>
+    <p>Paste your JSON below — it auto-formats on paste. Adjust indent and toggle between pretty and minified output.</p>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-group">
+      <span class="toolbar-label">Indent:</span>
+      <select id="indentSelect">
+        <option value="2">2 spaces</option>
+        <option value="4">4 spaces</option>
+        <option value="tab">Tab</option>
+      </select>
+    </div>
+    <div class="toolbar-group">
+      <span class="toolbar-label">Mode:</span>
+      <div class="btn-toggle">
+        <button id="modeFormat" class="active" onclick="setMode('format')">Pretty</button>
+        <button id="modeMinify" onclick="setMode('minify')">Minify</button>
+      </div>
+    </div>
+    <div style="margin-left: auto; display: flex; gap: 8px;">
+      <button class="btn-ghost" onclick="clearAll()">Clear</button>
+      <button class="btn-ghost" onclick="loadSample()">Sample</button>
+      <button class="btn-primary" onclick="runFormat()">Format ↵</button>
+    </div>
+  </div>
+
+  <div class="editor-area">
+    <div class="pane">
+      <div class="pane-header">
+        <span class="pane-title">Input</span>
+        <span id="inputCount">0 chars</span>
+      </div>
+      <textarea id="inputArea" placeholder='Paste JSON here — formats automatically on paste…' spellcheck="false"></textarea>
+      <div class="error-banner" id="errorBanner">
+        <svg width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="errorMsg"></span>
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <span class="pane-title">Output</span>
+        <span id="outputCount">0 chars</span>
+      </div>
+      <button class="btn-ghost copy-btn" id="copyBtn" onclick="copyOutput()">Copy</button>
+      <pre class="output-code" id="outputArea"></pre>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Ready</span>
+    <span class="tag" id="keysTag" style="display:none">Keys: <b id="keysCount">0</b></span>
+    <span class="tag" id="depthTag" style="display:none">Depth: <b id="depthCount">0</b></span>
+    <span class="tag" id="sizeTag" style="display:none">Size: <b id="sizeCount">0 B</b></span>
+  </div>
+
+  <div class="info-section">
+    <h2>How to use the JSON Formatter</h2>
+    <p>Paste any JSON string into the input box — it will auto-format the moment you paste. Use the indent selector to choose 2-space, 4-space, or tab indentation. Toggle between Pretty (readable) and Minify (compact) output. Click Copy to grab the result.</p>
+    <p>Supports all valid JSON: objects, arrays, strings, numbers, booleans, and null. If your JSON has a syntax error, the error message will show you exactly what's wrong.</p>
+  </div>
+</main>
+
+<script>
+  let currentMode = 'format';
+
+  const inputArea = document.getElementById('inputArea');
+  const outputArea = document.getElementById('outputArea');
+  const errorBanner = document.getElementById('errorBanner');
+  const errorMsg = document.getElementById('errorMsg');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const inputCount = document.getElementById('inputCount');
+  const outputCount = document.getElementById('outputCount');
+
+  function setMode(mode) {
+    currentMode = mode;
+    document.getElementById('modeFormat').classList.toggle('active', mode === 'format');
+    document.getElementById('modeMinify').classList.toggle('active', mode === 'minify');
+    if (inputArea.value.trim()) runFormat();
+  }
+
+  function getIndent() {
+    const v = document.getElementById('indentSelect').value;
+    return v === 'tab' ? '\t' : parseInt(v);
+  }
+
+  function runFormat() {
+    const raw = inputArea.value.trim();
+    if (!raw) { clearOutput(); return; }
+
+    try {
+      const parsed = JSON.parse(raw);
+      let result;
+      if (currentMode === 'minify') {
+        result = JSON.stringify(parsed);
+      } else {
+        result = JSON.stringify(parsed, null, getIndent());
+      }
+      outputArea.textContent = result;
+      outputCount.textContent = result.length + ' chars';
+      hideError();
+      setStatus('ok', 'Valid JSON');
+      updateStats(parsed, result);
+    } catch (e) {
+      showError(friendlyError(e.message, raw));
+      setStatus('err', 'Invalid JSON');
+      hideStats();
+    }
+  }
+
+  function friendlyError(msg, raw) {
+    // Try to extract position info
+    const posMatch = msg.match(/position (\d+)/i);
+    if (posMatch) {
+      const pos = parseInt(posMatch[1]);
+      const before = raw.substring(0, pos);
+      const line = (before.match(/\n/g) || []).length + 1;
+      const col = pos - before.lastIndexOf('\n');
+      return `Syntax error at line ${line}, column ${col}: ${msg}`;
+    }
+    return msg;
+  }
+
+  function updateStats(parsed, result) {
+    const keys = countKeys(parsed);
+    const depth = getDepth(parsed);
+    const bytes = new Blob([result]).size;
+
+    document.getElementById('keysCount').textContent = keys;
+    document.getElementById('depthCount').textContent = depth;
+    document.getElementById('sizeCount').textContent = formatBytes(bytes);
+    document.getElementById('keysTag').style.display = '';
+    document.getElementById('depthTag').style.display = '';
+    document.getElementById('sizeTag').style.display = '';
+  }
+
+  function hideStats() {
+    ['keysTag','depthTag','sizeTag'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+  }
+
+  function countKeys(obj) {
+    if (typeof obj !== 'object' || obj === null) return 0;
+    if (Array.isArray(obj)) return obj.reduce((s, v) => s + countKeys(v), 0);
+    return Object.keys(obj).length + Object.values(obj).reduce((s, v) => s + countKeys(v), 0);
+  }
+
+  function getDepth(obj, d = 0) {
+    if (typeof obj !== 'object' || obj === null) return d;
+    const children = Array.isArray(obj) ? obj : Object.values(obj);
+    if (children.length === 0) return d + 1;
+    return Math.max(...children.map(v => getDepth(v, d + 1)));
+  }
+
+  function formatBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    return (b/1048576).toFixed(2) + ' MB';
+  }
+
+  function setStatus(type, text) {
+    statusDot.className = 'status-dot ' + (type === 'ok' ? 'ok' : type === 'err' ? 'err' : '');
+    statusText.textContent = text;
+  }
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorBanner.classList.add('show');
+    outputArea.textContent = '';
+    outputCount.textContent = '0 chars';
+  }
+
+  function hideError() {
+    errorBanner.classList.remove('show');
+  }
+
+  function clearOutput() {
+    outputArea.textContent = '';
+    outputCount.textContent = '0 chars';
+    hideError();
+    setStatus('', 'Ready');
+    hideStats();
+  }
+
+  function clearAll() {
+    inputArea.value = '';
+    inputCount.textContent = '0 chars';
+    clearOutput();
+  }
+
+  function copyOutput() {
+    const text = outputArea.textContent;
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 1500);
+    });
+  }
+
+  function loadSample() {
+    inputArea.value = `{
+  "name": "JSONGeek",
+  "version": "1.0.0",
+  "tools": ["formatter", "validator", "minifier"],
+  "meta": {
+    "author": "JSONGeek Team",
+    "year": 2026,
+    "open": true
+  },
+  "stats": null
+}`;
+    inputCount.textContent = inputArea.value.length + ' chars';
+    runFormat();
+  }
+
+  // Auto-format on paste
+  inputArea.addEventListener('paste', () => {
+    setTimeout(() => {
+      inputCount.textContent = inputArea.value.length + ' chars';
+      runFormat();
+    }, 10);
+  });
+
+  inputArea.addEventListener('input', () => {
+    inputCount.textContent = inputArea.value.length + ' chars';
+  });
+
+  document.getElementById('indentSelect').addEventListener('change', () => {
+    if (inputArea.value.trim()) runFormat();
+  });
+</script>
+
+</body>
+</html>

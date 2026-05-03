@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/tools/json-formatter",  "destination": "/tools/json-formatter.html"  },
+    { "source": "/tools/json-validator",   "destination": "/tools/json-validator.html"   },
+    { "source": "/tools/json-minifier",    "destination": "/tools/json-minifier.html"    },
+    { "source": "/tools/json-to-csv",      "destination": "/tools/json-to-csv.html"      },
+    { "source": "/tools/json-to-python",   "destination": "/tools/json-to-python.html"   }
+  ]
+}

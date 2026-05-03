@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JSON to Python Dict Converter Online | JSONGeek</title>
+  <meta name="description" content="Convert JSON to a Python dictionary instantly. Correctly maps null→None, true→True, false→False. Choose variable name and copy ready-to-use Python code." />
+  <link rel="canonical" href="https://jsongeek.com/tools/json-to-python" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #222535;
+      --border: #2e3148;
+      --accent: #6c63ff;
+      --accent-hover: #7c74ff;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --blue: #60a5fa;
+      --orange: #fb923c;
+      --purple: #c084fc;
+      --teal: #2dd4bf;
+      --text: #e2e8f0;
+      --text-muted: #8892a4;
+      --text-dim: #4a5568;
+      --font-mono: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      --radius: 8px;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+
+    header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; gap: 16px; }
+    .logo { font-size: 1.2rem; font-weight: 700; color: var(--accent); text-decoration: none; letter-spacing: -0.5px; }
+    .logo span { color: var(--text); }
+    nav { display: flex; gap: 8px; margin-left: auto; }
+    nav a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; padding: 4px 10px; border-radius: 6px; transition: color 0.15s, background 0.15s; }
+    nav a:hover { color: var(--text); background: var(--surface2); }
+    nav a.active { color: var(--accent); background: rgba(108,99,255,0.12); }
+
+    main { flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; padding: 28px 20px; }
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
+    .page-header p { color: var(--text-muted); font-size: 0.95rem; }
+
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; padding: 12px 16px; }
+    .toolbar-label { font-size: 0.8rem; color: var(--text-muted); }
+
+    input[type="text"], select, button { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-size: 0.85rem; cursor: pointer; transition: border-color 0.15s, background 0.15s; font-family: inherit; }
+    input[type="text"] { cursor: text; width: 160px; }
+    input[type="text"]:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+    select:hover, button:hover { border-color: var(--accent); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; padding: 6px 18px; }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+    .btn-ghost { background: transparent; border-color: var(--border); color: var(--text-muted); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--text-muted); background: var(--surface2); }
+
+    .editor-area { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; min-height: 420px; }
+
+    .pane { display: flex; flex-direction: column; position: relative; }
+    .pane + .pane { border-left: 1px solid var(--border); }
+    .pane-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 0.78rem; color: var(--text-muted); }
+    .pane-header .pane-title { font-weight: 600; color: var(--text); }
+
+    textarea { flex: 1; background: var(--surface); color: var(--text); border: none; padding: 16px; font-family: var(--font-mono); font-size: 0.88rem; line-height: 1.6; resize: none; outline: none; }
+
+    /* Syntax-highlighted output */
+    .output-code { flex: 1; background: var(--surface); padding: 16px; font-family: var(--font-mono); font-size: 0.88rem; line-height: 1.6; overflow: auto; white-space: pre; display: block; }
+
+    /* Python syntax colors */
+    .py-key { color: var(--text); }
+    .py-str { color: #a3e635; }
+    .py-num { color: var(--blue); }
+    .py-bool-true { color: var(--green); font-weight: 600; }
+    .py-bool-false { color: var(--red); font-weight: 600; }
+    .py-none { color: var(--purple); font-weight: 600; }
+    .py-varname { color: var(--teal); font-weight: 600; }
+    .py-punct { color: var(--text-muted); }
+    .py-list { color: var(--orange); }
+
+    .error-banner { display: none; align-items: center; gap: 8px; padding: 10px 16px; background: rgba(239,68,68,0.1); border-top: 1px solid rgba(239,68,68,0.3); font-size: 0.84rem; color: #fca5a5; }
+    .error-banner.show { display: flex; }
+
+    .copy-wrap { position: absolute; top: 36px; right: 10px; display: flex; gap: 6px; z-index: 10; }
+
+    .status-bar { display: flex; align-items: center; gap: 14px; padding: 8px 16px; background: var(--surface); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius); font-size: 0.78rem; color: var(--text-muted); flex-wrap: wrap; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+    .status-dot.ok { background: var(--green); }
+    .status-dot.err { background: var(--red); }
+
+    /* Conversion legend */
+    .legend { margin-top: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
+    .legend h3 { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+    .legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+    .legend-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--surface2); border-radius: 6px; border: 1px solid var(--border); font-size: 0.83rem; }
+    .legend-item .arrow { color: var(--text-dim); font-size: 0.9rem; }
+    .json-side { font-family: var(--font-mono); color: var(--text-muted); }
+    .py-side { font-family: var(--font-mono); font-weight: 600; }
+    .py-side.green { color: var(--green); }
+    .py-side.red { color: var(--red); }
+    .py-side.purple { color: var(--purple); }
+    .py-side.blue { color: var(--blue); }
+    .py-side.lime { color: #a3e635; }
+
+    .info-section { margin-top: 32px; }
+    .info-section h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; }
+    .info-section p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 12px; }
+    code { background: var(--surface2); padding: 1px 5px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.85em; color: var(--accent); }
+
+    @media (max-width: 700px) {
+      .editor-area { grid-template-columns: 1fr; }
+      .pane + .pane { border-left: none; border-top: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="https://jsongeek.com">JSON<span>Geek</span></a>
+  <nav>
+    <a href="/tools/json-formatter">Formatter</a>
+    <a href="/tools/json-validator">Validator</a>
+    <a href="/tools/json-minifier">Minifier</a>
+    <a href="/tools/json-to-csv">→ CSV</a>
+    <a href="/tools/json-to-python" class="active">→ Python</a>
+  </nav>
+</header>
+
+<main>
+  <div class="page-header">
+    <h1>JSON to Python Dict Converter</h1>
+    <p>Convert any JSON to a valid Python dictionary. <code>null</code> → <code>None</code>, <code>true</code> → <code>True</code>, <code>false</code> → <code>False</code>. Output is paste-ready Python code.</p>
+  </div>
+
+  <div class="toolbar">
+    <span class="toolbar-label">Variable name:</span>
+    <input type="text" id="varName" value="data" placeholder="data" maxlength="64" title="Python variable name" />
+    <span class="toolbar-label">Indent:</span>
+    <select id="indentSelect">
+      <option value="4">4 spaces</option>
+      <option value="2">2 spaces</option>
+    </select>
+    <div style="margin-left: auto; display: flex; gap: 8px;">
+      <button class="btn-ghost" onclick="clearAll()">Clear</button>
+      <button class="btn-ghost" onclick="loadSample()">Sample</button>
+      <button class="btn-primary" onclick="runConvert()">Convert ↵</button>
+    </div>
+  </div>
+
+  <div class="editor-area">
+    <div class="pane">
+      <div class="pane-header">
+        <span class="pane-title">Input JSON</span>
+        <span id="inputCount">0 chars</span>
+      </div>
+      <textarea id="inputArea" placeholder='Paste JSON here — converts automatically on paste…' spellcheck="false"></textarea>
+      <div class="error-banner" id="errorBanner">
+        <svg width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="errorMsg"></span>
+      </div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-header">
+        <span class="pane-title">Python Output</span>
+        <span id="outputCount">0 chars</span>
+      </div>
+      <div class="copy-wrap">
+        <button class="btn-ghost" id="copyBtn" onclick="copyOutput()" style="font-size:0.75rem; padding:4px 10px;">Copy</button>
+      </div>
+      <div class="output-code" id="outputArea"><span style="color: var(--text-dim)">Python code will appear here…</span></div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Ready — paste JSON and click Convert</span>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <h3>JSON → Python Conversion Reference</h3>
+    <div class="legend-grid">
+      <div class="legend-item"><span class="json-side">null</span><span class="arrow">→</span><span class="py-side purple">None</span></div>
+      <div class="legend-item"><span class="json-side">true</span><span class="arrow">→</span><span class="py-side green">True</span></div>
+      <div class="legend-item"><span class="json-side">false</span><span class="arrow">→</span><span class="py-side red">False</span></div>
+      <div class="legend-item"><span class="json-side">{…}</span><span class="arrow">→</span><span class="py-side blue">dict {…}</span></div>
+      <div class="legend-item"><span class="json-side">[…]</span><span class="arrow">→</span><span class="py-side blue">list […]</span></div>
+      <div class="legend-item"><span class="json-side">"string"</span><span class="arrow">→</span><span class="py-side lime">"string"</span></div>
+      <div class="legend-item"><span class="json-side">123 / 1.5</span><span class="arrow">→</span><span class="py-side blue">int / float</span></div>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <h2>Why JSON isn't valid Python</h2>
+    <p>JSON and Python look similar but have key differences: JSON uses lowercase <code>null</code>, <code>true</code>, and <code>false</code>, while Python uses <code>None</code>, <code>True</code>, and <code>False</code>. Pasting raw JSON into Python raises a <code>NameError</code> on those values. This converter handles all three substitutions automatically, so the output is always valid Python.</p>
+    <p>You can also use Python's built-in <code>json.loads()</code> to parse JSON strings at runtime — but when you need a hardcoded dict in your source code, this converter gives you the exact syntax you need.</p>
+  </div>
+</main>
+
+<script>
+  const inputArea = document.getElementById('inputArea');
+  const outputArea = document.getElementById('outputArea');
+
+  function getVarName() {
+    const v = document.getElementById('varName').value.trim();
+    return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(v) ? v : 'data';
+  }
+
+  function getIndent() {
+    return parseInt(document.getElementById('indentSelect').value);
+  }
+
+  function runConvert() {
+    const raw = inputArea.value.trim();
+    if (!raw) { clearOutput(); return; }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch(e) {
+      showError(e.message);
+      return;
+    }
+
+    const indent = getIndent();
+    const varName = getVarName();
+    const pythonStr = jsonToPython(parsed, 0, indent);
+    const fullCode = varName + ' = ' + pythonStr;
+
+    // Plain text for copy
+    outputArea._plainText = fullCode;
+
+    // Highlighted HTML
+    const htmlCode = varName + ' = ' + jsonToPythonHTML(parsed, 0, indent);
+    outputArea.innerHTML = `<span class="py-varname">${escHtml(varName)}</span><span class="py-punct"> = </span>` + jsonToPythonHTML(parsed, 0, indent);
+
+    document.getElementById('outputCount').textContent = fullCode.length + ' chars';
+    hideError();
+    document.getElementById('statusDot').className = 'status-dot ok';
+    document.getElementById('statusText').textContent = 'Converted successfully';
+  }
+
+  function jsonToPython(val, depth, indent) {
+    if (val === null) return 'None';
+    if (val === true) return 'True';
+    if (val === false) return 'False';
+    if (typeof val === 'number') return String(val);
+    if (typeof val === 'string') return pythonStr(val);
+    if (Array.isArray(val)) {
+      if (val.length === 0) return '[]';
+      const pad = ' '.repeat((depth + 1) * indent);
+      const closePad = ' '.repeat(depth * indent);
+      const items = val.map(v => pad + jsonToPython(v, depth + 1, indent));
+      return '[\n' + items.join(',\n') + '\n' + closePad + ']';
+    }
+    if (typeof val === 'object') {
+      const keys = Object.keys(val);
+      if (keys.length === 0) return '{}';
+      const pad = ' '.repeat((depth + 1) * indent);
+      const closePad = ' '.repeat(depth * indent);
+      const items = keys.map(k => pad + pythonStr(k) + ': ' + jsonToPython(val[k], depth + 1, indent));
+      return '{\n' + items.join(',\n') + '\n' + closePad + '}';
+    }
+    return String(val);
+  }
+
+  function jsonToPythonHTML(val, depth, indent) {
+    if (val === null) return '<span class="py-none">None</span>';
+    if (val === true) return '<span class="py-bool-true">True</span>';
+    if (val === false) return '<span class="py-bool-false">False</span>';
+    if (typeof val === 'number') return `<span class="py-num">${val}</span>`;
+    if (typeof val === 'string') return `<span class="py-str">${escHtml(pythonStr(val))}</span>`;
+
+    if (Array.isArray(val)) {
+      if (val.length === 0) return '<span class="py-punct">[]</span>';
+      const pad = ' '.repeat((depth + 1) * indent);
+      const closePad = ' '.repeat(depth * indent);
+      const items = val.map(v => pad + jsonToPythonHTML(v, depth + 1, indent));
+      return '<span class="py-punct">[</span>\n' + items.join('<span class="py-punct">,</span>\n') + '\n' + closePad + '<span class="py-punct">]</span>';
+    }
+
+    if (typeof val === 'object') {
+      const keys = Object.keys(val);
+      if (keys.length === 0) return '<span class="py-punct">{}</span>';
+      const pad = ' '.repeat((depth + 1) * indent);
+      const closePad = ' '.repeat(depth * indent);
+      const items = keys.map(k =>
+        pad + `<span class="py-str">${escHtml(pythonStr(k))}</span><span class="py-punct">: </span>` + jsonToPythonHTML(val[k], depth + 1, indent)
+      );
+      return '<span class="py-punct">{</span>\n' + items.join('<span class="py-punct">,</span>\n') + '\n' + closePad + '<span class="py-punct">}</span>';
+    }
+
+    return escHtml(String(val));
+  }
+
+  function pythonStr(s) {
+    // Use double quotes; escape internal double quotes and backslashes
+    return '"' + s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t') + '"';
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function showError(msg) {
+    document.getElementById('errorMsg').textContent = 'Invalid JSON: ' + msg;
+    document.getElementById('errorBanner').classList.add('show');
+    outputArea.innerHTML = '<span style="color: var(--text-dim)">Python code will appear here…</span>';
+    outputArea._plainText = '';
+    document.getElementById('outputCount').textContent = '0 chars';
+    document.getElementById('statusDot').className = 'status-dot err';
+    document.getElementById('statusText').textContent = 'Invalid JSON';
+  }
+
+  function hideError() { document.getElementById('errorBanner').classList.remove('show'); }
+
+  function clearOutput() {
+    outputArea.innerHTML = '<span style="color: var(--text-dim)">Python code will appear here…</span>';
+    outputArea._plainText = '';
+    document.getElementById('outputCount').textContent = '0 chars';
+    hideError();
+    document.getElementById('statusDot').className = 'status-dot';
+    document.getElementById('statusText').textContent = 'Ready — paste JSON and click Convert';
+  }
+
+  function clearAll() {
+    inputArea.value = '';
+    document.getElementById('inputCount').textContent = '0 chars';
+    clearOutput();
+  }
+
+  function copyOutput() {
+    const text = outputArea._plainText;
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 1500);
+    });
+  }
+
+  function loadSample() {
+    inputArea.value = `{
+  "user": {
+    "id": 5821,
+    "username": "ada_codes",
+    "email": "ada@example.com",
+    "verified": true,
+    "banned": false,
+    "profile_image": null,
+    "score": 99.5,
+    "roles": ["admin", "editor"],
+    "metadata": {
+      "joined": "2024-01-15",
+      "last_login": "2026-05-01"
+    }
+  }
+}`;
+    document.getElementById('inputCount').textContent = inputArea.value.length + ' chars';
+    runConvert();
+  }
+
+  inputArea.addEventListener('paste', () => {
+    setTimeout(() => {
+      document.getElementById('inputCount').textContent = inputArea.value.length + ' chars';
+      runConvert();
+    }, 10);
+  });
+
+  inputArea.addEventListener('input', () => {
+    document.getElementById('inputCount').textContent = inputArea.value.length + ' chars';
+  });
+
+  document.getElementById('varName').addEventListener('input', () => {
+    if (inputArea.value.trim()) runConvert();
+  });
+
+  document.getElementById('indentSelect').addEventListener('change', () => {
+    if (inputArea.value.trim()) runConvert();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') runConvert();
+  });
+</script>
+
+</body>
+</html>
