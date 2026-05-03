@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JSONGeek — Free Online JSON Tools</title>
+  <meta name="description" content="Free online JSON tools: formatter, validator, minifier, JSON to CSV, JSON to Python. Fast, private, no sign-up needed." />
+  <link rel="canonical" href="https://jsongeek.com" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #222535;
+      --border: #2e3148;
+      --accent: #6c63ff;
+      --accent-hover: #7c74ff;
+      --green: #22c55e;
+      --text: #e2e8f0;
+      --text-muted: #8892a4;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--text); }
+
+    nav { display: flex; gap: 6px; }
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 5px 12px;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+    nav a:hover { color: var(--text); background: var(--surface2); }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 60px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(108,99,255,0.12);
+      border: 1px solid rgba(108,99,255,0.3);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 0.8rem;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 .highlight { color: var(--accent); }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 520px;
+      margin: 0 auto 36px;
+      line-height: 1.6;
+    }
+
+    .hero-features {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .hero-features span { display: flex; align-items: center; gap: 6px; }
+    .hero-features span::before { content: '✓'; color: var(--green); font-weight: 700; }
+
+    /* Tools grid */
+    .tools-section {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    .section-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tool-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .tool-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(108,99,255,0.15);
+    }
+
+    .tool-card:hover::before { opacity: 1; }
+
+    .tool-icon {
+      font-size: 1.8rem;
+      line-height: 1;
+    }
+
+    .tool-card h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .tool-card p {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    .tool-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 9px;
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      width: fit-content;
+    }
+
+    .tool-arrow {
+      margin-left: auto;
+      color: var(--accent);
+      font-size: 1.1rem;
+      position: absolute;
+      bottom: 22px;
+      right: 22px;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .tool-card:hover .tool-arrow { opacity: 1; transform: translateX(3px); }
+
+    /* Footer */
+    footer {
+      margin-top: auto;
+      border-top: 1px solid var(--border);
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    footer a { color: var(--text-muted); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 600px) {
+      header { padding: 14px 18px; }
+      nav { display: none; }
+      .hero { padding: 50px 18px 40px; }
+      footer { justify-content: center; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">JSON<span>Geek</span></a>
+  <nav>
+    <a href="/tools/json-formatter">Formatter</a>
+    <a href="/tools/json-validator">Validator</a>
+    <a href="/tools/json-minifier">Minifier</a>
+    <a href="/tools/json-to-csv">→ CSV</a>
+    <a href="/tools/json-to-python">→ Python</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-badge">⚡ Fast &amp; free — no sign-up needed</div>
+  <h1>The <span class="highlight">JSON tools</span><br/>developers actually use</h1>
+  <p>Format, validate, minify, and convert JSON in seconds. Everything runs in your browser — your data never leaves your machine.</p>
+  <div class="hero-features">
+    <span>100% free</span>
+    <span>No ads</span>
+    <span>Private &amp; offline</span>
+    <span>No account required</span>
+  </div>
+</section>
+
+<div class="tools-section">
+  <p class="section-label">All Tools</p>
+  <div class="tools-grid">
+
+    <a class="tool-card" href="/tools/json-formatter">
+      <div class="tool-icon">✨</div>
+      <h2>JSON Formatter</h2>
+      <p>Beautify and pretty-print JSON with customizable indentation. Auto-formats on paste. Toggle between pretty and minified output.</p>
+      <div class="tool-tag">Format &amp; Beautify</div>
+      <span class="tool-arrow">→</span>
+    </a>
+
+    <a class="tool-card" href="/tools/json-validator">
+      <div class="tool-icon">✅</div>
+      <h2>JSON Validator</h2>
+      <p>Check if your JSON is valid. Get exact line and column numbers plus plain-English error hints. Includes key count, depth, and size stats.</p>
+      <div class="tool-tag">Validate &amp; Debug</div>
+      <span class="tool-arrow">→</span>
+    </a>
+
+    <a class="tool-card" href="/tools/json-minifier">
+      <div class="tool-icon">🗜️</div>
+      <h2>JSON Minifier</h2>
+      <p>Strip all whitespace from JSON to reduce file size. Shows before/after byte counts and exact % reduction in real time.</p>
+      <div class="tool-tag">Compress &amp; Minify</div>
+      <span class="tool-arrow">→</span>
+    </a>
+
+    <a class="tool-card" href="/tools/json-to-csv">
+      <div class="tool-icon">📊</div>
+      <h2>JSON to CSV</h2>
+      <p>Convert a JSON array to a CSV file. Choose delimiter, preview the table live, flatten nested objects, and download the .csv instantly.</p>
+      <div class="tool-tag">Convert to CSV</div>
+      <span class="tool-arrow">→</span>
+    </a>
+
+    <a class="tool-card" href="/tools/json-to-python">
+      <div class="tool-icon">🐍</div>
+      <h2>JSON to Python Dict</h2>
+      <p>Convert JSON to valid Python code. Correctly maps <code style="background:#222535;padding:1px 4px;border-radius:3px;font-size:0.9em">null→None</code>, <code style="background:#222535;padding:1px 4px;border-radius:3px;font-size:0.9em">true→True</code>, <code style="background:#222535;padding:1px 4px;border-radius:3px;font-size:0.9em">false→False</code>. Syntax highlighted output.</p>
+      <div class="tool-tag">Convert to Python</div>
+      <span class="tool-arrow">→</span>
+    </a>
+
+  </div>
+</div>
+
+<footer>
+  <span>© 2026 JSONGeek — Free JSON tools for developers</span>
+  <div style="display:flex;gap:16px">
+    <a href="/tools/json-formatter">Formatter</a>
+    <a href="/tools/json-validator">Validator</a>
+    <a href="/tools/json-minifier">Minifier</a>
+    <a href="/tools/json-to-csv">JSON to CSV</a>
+    <a href="/tools/json-to-python">JSON to Python</a>
+  </div>
+</footer>
+
+</body>
+</html>
